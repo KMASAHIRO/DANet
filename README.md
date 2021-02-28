@@ -49,5 +49,5 @@ Maskを混合音声とかけることにより分離音声が生成され、モ�
 今回は[museval](https://sigsep.github.io/sigsep-mus-eval/#metrics)というパッケージを用いてこれを計算した。  
 
 また、この計算における推定音声の部分を混合音声に変えてSDRに対応するものを計算し、SDRからその値を引いたものがNSDRとなる。  
-NSDR、SIR,SARの各平均をとったものがGNSDR、GSIR、GSARとなり、これが論文で使用されている分離音性能の評価の指標となる。
+NSDR、SIR、SARの各平均をとったものがGNSDR、GSIR、GSARとなり、これが論文で使用されている分離音性能の評価の指標となる。
 
