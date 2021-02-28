@@ -7,7 +7,7 @@
 DANetディレクトリにはモデルの実装、学習、評価の際に実行したものをモジュールとしてまとめており、パッケージとして利用することが可能。  
 DANet.ipynbには実際にモデルの実装、学習、評価を行った結果を示す。
 モデルの実装にはTensorflowとKerasを用いた。  
-DANet.ipynbのGoogle Colab上のリンクは[こちら](https://github.com/naplab/DANet)
+DANet.ipynbのGoogle Colab上のリンクは[こちら](https://github.com/naplab/DANet)  
 Pytorchを用いた公式の実装は[こちら](https://github.com/naplab/DANet)
 
 ## データの前処理
