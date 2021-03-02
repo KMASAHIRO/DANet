@@ -1,11 +1,13 @@
 import itertools
 import numpy as np
 
+# テストデータを生成するクラス
 class all_test_data():
     def __init__(self, Fouriers, sound_names):
         self.Fouriers = Fouriers
         self.sound_names = sound_names
 
+    # model.kmeans_fit用のデータを生成する関数
     def for_kmeans(self, sound1, sound2):
 
         train_num = [0, 0]
@@ -19,9 +21,9 @@ class all_test_data():
 
         try:
             if 'train1' not in locals():
-                raise NameError('sound1 was not found.')
+                raise NameError('sound1 is not found.')
             if 'train2' not in locals():
-                raise NameError('sound2 was not found.')
+                raise NameError('sound2 is not found.')
         except NameError as message:
             print(message)
 
@@ -75,6 +77,7 @@ class all_test_data():
 
                 return x_test
 
+    # model.predict用のデータを生成する関数
     def for_predict(self, sound1, sound2):
 
         train_num = [0, 0]
@@ -88,9 +91,9 @@ class all_test_data():
 
         try:
             if 'train1' not in locals():
-                raise NameError('sound1 was not found.')
+                raise NameError('sound1 is not found.')
             if 'train2' not in locals():
-                raise NameError('sound2 was not found.')
+                raise NameError('sound2 is not found.')
         except NameError as message:
             print(message)
 
@@ -149,6 +152,7 @@ class all_test_data():
 
                 return [x_test1, x_test2], y_test
 
+    # model.prediction(model.kmeans_fitとmodel.predictを両方行う)用のデータを生成する関数
     def generate_data(self, sound1, sound2):
         train_num = [0, 0]
         iterate_num = 0
@@ -161,9 +165,9 @@ class all_test_data():
 
         try:
             if 'train1' not in locals():
-                raise NameError('sound1 was not found.')
+                raise NameError('sound1 is not found.')
             if 'train2' not in locals():
-                raise NameError('sound2 was not found.')
+                raise NameError('sound2 is not found.')
         except NameError as message:
             print(message)
 
@@ -221,15 +225,15 @@ class all_test_data():
 
                 return x_test, y_test
 
-
+# 訓練データを生成するジェネレータを含むクラス
 class generator():
     def __init__(self, Fouriers, sound_names):
         self.train_num = [0, 0]
         self.iterate_num = 0
         self.Fouriers = Fouriers
         self.sound_names = sound_names
-        return
 
+    # 訓練データを生成するジェネレータ
     def generator_train(self, sound1, sound2, batch_size, initialize=True):
         if initialize:
             self.train_num = [0, 0]
@@ -243,9 +247,9 @@ class generator():
 
         try:
             if 'train1' not in locals():
-                raise NameError('sound1 was not found.')
+                raise NameError('sound1 is not found.')
             if 'train2' not in locals():
-                raise NameError('sound2 was not found.')
+                raise NameError('sound2 is not found.')
         except NameError as message:
             print(message)
 
@@ -323,7 +327,7 @@ class generator():
 
                     yield [x_train1, x_train2], y_train
 
-    def get_batch_and_steps(self, model):
-        batch_size = model.get_batch_size()
+    # batch sizeからstep数(ジェネレータを1 epochで呼び出す回数)を求める関数
+    def get_steps(self, batch_size):
         steps = (((self.Fouriers.shape[-1]//100)+1)*35*35) // batch_size
-        return batch_size, steps
+        return steps

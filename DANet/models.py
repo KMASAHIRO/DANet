@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.style as ms
 ms.use('seaborn-muted')
 
+# 前処理をするレイヤ(推論時にモデルが位相付きのデータを受け取り、Maskとかけ合わせるために必要)
 class Preparation(tf.keras.layers.Layer):
   def __init__(self, log_eps,  *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -22,7 +23,7 @@ class Preparation(tf.keras.layers.Layer):
       model_input = tf.math.log(tf.math.abs(input) + self.log_eps)
       return model_input
 
-
+# Attractorを生成するレイヤ(学習時にはideal mask、推論時にはkmeansを使用)
 class Attractor(tf.keras.layers.Layer):
     def __init__(self, kmeans_func, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,6 +41,7 @@ class Attractor(tf.keras.layers.Layer):
 
         return attractor
 
+# Maskと混合音声を掛け合わせて分離音声を生成するレイヤ
 class Make_clean_reference(tf.keras.layers.Layer):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -53,6 +55,7 @@ class Make_clean_reference(tf.keras.layers.Layer):
       return clean_reference
 
 
+# DANetのモデル
 class DANet(tf.keras.Model):
     def __init__(self, source_num, embed_ndim, batch_size, log_eps=0.0001, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,6 +99,7 @@ class DANet(tf.keras.Model):
 
         return clean_reference
 
+    # embeddingの結果を得る関数(kmeansクラスタリングを行うときに使用)
     def get_embedded_data(self, inputs, training):
         x1 = self.preparation(inputs, training)
         x1 = self.reshape(x1)
@@ -109,6 +113,7 @@ class DANet(tf.keras.Model):
 
         return output
 
+    # kmeansクラスタリングを行う関数
     def kmeans_fit(self, inputs, max_iter=1000, random_seed=0):
         embedded_data = self.get_embedded_data(inputs, training=False)
 
@@ -151,29 +156,34 @@ class DANet(tf.keras.Model):
 
         self.cluster_centers_list = np.asarray(cluster_centers_list)
 
+    # kmeansクラスタリングの結果(中心点)を受け取る関数
     def kmeans_predict(self, input):
         return self.cluster_centers_list
 
+    # 設定したbatch sizeを得る関数(計算グラフ構築時、モデルへの入力のbatch sizeとこの値が一致していなければならない)
     def get_batch_size(self):
         return self.batch_size
 
+    # batch sizeを設定する関数(計算グラフ構築時、モデルへの入力のbatch sizeとこの値が一致していなければならない)
     def set_batch_size(self, batch_size):
         self.batch_size = batch_size
         self.cluster_centers_list = np.ones(shape=(self.batch_size, self.source_num, self.embed_ndim))
 
+    # 推論を行う関数
     def prediction(self, input):
         self.kmeans_fit(input)
-        fake_ideal_mask = np.zeros(shape=(input.shape[0], 2, 129, 100))
+        fake_ideal_mask = np.zeros(shape=(input.shape[0], self.source_num, 129, 100))
         result = self.predict([input, fake_ideal_mask], batch_size=len(input))
         return result
 
+    # モデルの重みをロードする関数
     def loading(self, path):
         input1 = np.zeros(shape=(self.batch_size, 129, 100))
-        input2 = np.zeros(shape=(self.batch_size, 2, 129, 100))
+        input2 = np.zeros(shape=(self.batch_size, self.source_num, 129, 100))
         temp = self.predict(x=[input1, input2], batch_size=self.batch_size)
         self.load_weights(path)
 
-
+# 損失関数
 def loss_function(y_true, y_pred):
   frequency = tf.shape(y_true)[1]
   time = tf.shape(y_true)[2]
@@ -181,7 +191,9 @@ def loss_function(y_true, y_pred):
   time = tf.cast(time, tf.float32)
   return tf.reduce_sum((y_true - y_pred)**2) / (frequency*time)
 
-def creating_model(source_num=2, embed_ndim=20, batch_size=25, optimizer=None, loss=loss_function):
+# モデルを構築する関数
+def create_model(source_num=2, embed_ndim=20, optimizer=None, loss=loss_function):
+    batch_size = 25
     model = DANet(source_num=source_num, embed_ndim=embed_ndim, batch_size=batch_size, log_eps=0.0001)
 
     if optimizer is None:
@@ -190,5 +202,9 @@ def creating_model(source_num=2, embed_ndim=20, batch_size=25, optimizer=None, l
         model.compile(optimizer=tf.keras.optimizers.RMSprop(learning_rate=lr_schedule), loss=loss)
     else:
         model.compile(optimizer=optimizer, loss=loss)
+
+    input1 = np.zeros(shape=(batch_size, 129, 100))
+    input2 = np.zeros(shape=(batch_size, source_num, 129, 100))
+    temp = model.predict(x=[input1, input2], batch_size=batch_size)
 
     return model

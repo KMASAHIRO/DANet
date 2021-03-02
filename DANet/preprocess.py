@@ -7,11 +7,15 @@ import matplotlib.pyplot as plt
 import matplotlib.style as ms
 ms.use('seaborn-muted')
 
+# 窓関数(ハニング窓の平方根)
 def square_root_of_hann(M, sym=False):
   w = scipy.signal.windows.hann(M, sym)
   w = np.sqrt(w)
   return w
 
+# 前処理を行う関数
+# 音声をファイルからロードしてリサンプリング、短時間フーリエ変換する
+# 音声の順番に対応する、音の種類を表すラベルを生成する
 def preprocess(labelpath, audiopath, win_func=square_root_of_hann):
     labels = pandas.read_csv(labelpath)
     labels = labels.sort_values(by=["category", "filename"])

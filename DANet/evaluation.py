@@ -8,12 +8,13 @@ import matplotlib.style as ms
 ms.use('seaborn-muted')
 
 
-
+# 窓関数(ハニング窓の平方根)
 def square_root_of_hann(M, sym=False):
     w = scipy.signal.windows.hann(M, sym)
     w = np.sqrt(w)
     return w
 
+# istft(逆短時間フーリエ変換)によりスペクトログラムから音声波形に戻す関数
 def return_to_sound(separated, before_data, win_func=square_root_of_hann):
     before = list()
     for i in range(len(before_data)):
@@ -47,6 +48,7 @@ def return_to_sound(separated, before_data, win_func=square_root_of_hann):
     return before, mixed, after
 
 
+# NSDR、SIR、SARを求める関数
 def evaluation(before, mixed, after):
     NSDR_list = list()
     SIR_list = list()
@@ -119,7 +121,7 @@ def evaluation(before, mixed, after):
 
     return NSDR_list, SIR_list, SAR_list
 
-
+# GNSDR、GSIR、GSARを求める関数
 def final_eval(NSDR_list, SIR_list, SAR_list):
     GNSDR = np.mean(NSDR_list)
     GSIR = np.mean(SIR_list)
@@ -127,7 +129,7 @@ def final_eval(NSDR_list, SIR_list, SAR_list):
 
     return GNSDR, GSIR, GSAR
 
-
+# istft(逆短時間フーリエ変換)により復元した音声波形を保存する関数
 def save_sound(num, before, mixed, after):
     for i in range(len(before[num])):
         sf.write("before{}.wav".format(i+1),before[num,i],8000)
@@ -138,6 +140,7 @@ def save_sound(num, before, mixed, after):
         sf.write("after{}.wav".format(i+1),after[num,i],8000)
 
 
+# 音声波形のグラフを表示して保存する
 def save_sound_fig(num, before, mixed, after):
     for i in range(len(before[num])):
         fig = plt.figure(figsize=(10, 4))
