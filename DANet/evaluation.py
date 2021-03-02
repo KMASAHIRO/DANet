@@ -129,7 +129,7 @@ def final_eval(NSDR_list, SIR_list, SAR_list):
 
     return GNSDR, GSIR, GSAR
 
-# istft(逆短時間フーリエ変換)により復元した音声波形を保存する関数
+# istft(逆短時間フーリエ変換)により復元した音声を保存する関数
 def save_sound(num, before, mixed, after):
     for i in range(len(before[num])):
         sf.write("before{}.wav".format(i+1),before[num,i],8000)
