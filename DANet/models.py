@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.style as ms
 ms.use('seaborn-muted')
 
-class Preparation(tf.python.keras.layers.Layer):
+class Preparation(tf.keras.layers.Layer):
   def __init__(self, log_eps,  *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.log_eps = log_eps
