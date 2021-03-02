@@ -10,6 +10,17 @@ DANet.ipynbには実際にモデルの実装、学習、評価を行った結果
 DANet.ipynbのGoogle Colab上のリンクは[こちら](https://colab.research.google.com/drive/1HCnVnLwGp8bMlnDwZybW1sY7L_gNMAC9?usp=sharing)  
 Pytorchを用いた公式の実装は[こちら](https://github.com/naplab/DANet)
 
+## 実行したPythonのバージョンと使用したパッケージ
+- Python 3.7.10
+- TensorFlow 2.4.1
+- museval 0.4.0
+- SoundFile 0.10.3.post1
+- pandas 1.1.5
+- numpy 1.19.5
+- scipy 1.4.1
+- librosa 0.8.0
+- matplotlib 3.2.2
+
 ## データの前処理
 論文での実験通りに行った。  
 まず、入力音声を8000Hzでリサンプリングし、window lengthを32ms、hop sizeを8ms、窓関数をハニング窓の平方根とした短時間フーリエ変換を行った。その後、絶対値を取ってから自然対数を取り、時間方向の次元数を100にしたものをモデルへの入力とした。
