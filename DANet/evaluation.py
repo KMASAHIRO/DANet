@@ -140,7 +140,7 @@ def save_sound(num, before, mixed, after):
         sf.write("after{}.wav".format(i+1),after[num,i],8000)
 
 
-# 音声波形のグラフを表示して保存する
+# 音声波形のグラフを保存する
 def save_sound_fig(num, before, mixed, after):
     for i in range(len(before[num])):
         fig = plt.figure(figsize=(10, 4))
