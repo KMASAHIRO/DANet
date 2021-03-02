@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="DANet",
-    version="0.0.1",
+    version="0.0.2",
     author="KMASAHIRO",
     description="a model that separates a mixed sound into whatever kinds of sound you like",
     long_description=long_description,
@@ -17,5 +17,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6.9',
+    python_requires='>=3.7.10',
 )
