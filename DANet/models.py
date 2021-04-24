@@ -23,23 +23,29 @@ class Preparation(tf.keras.layers.Layer):
       model_input = tf.math.log(tf.math.abs(input) + self.log_eps)
       return model_input
 
-# Attractorを生成するレイヤ(学習時にはideal mask、推論時にはkmeansを使用)
+# Attractorを生成するレイヤ(基本的に学習時にはideal mask、推論時にはkmeansを使用)
 class Attractor(tf.keras.layers.Layer):
     def __init__(self, kmeans_func, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.kmeans_func = kmeans_func
+        self.is_kmeans = False
 
     def call(self, input, training):
         if training:
-            att_num = tf.einsum('Ncft,Nftk->Nck', input[0], input[1])
-            att_denom = tf.math.reduce_sum(input[0], axis=[2, 3])  # batch_size, c
-            att_denom = tf.reshape(att_denom, [-1, 2, 1])
-            attractor = att_num / att_denom
+            if self.is_kmeans:
+                attractor = self.kmeans_func(input[0])
+                attractor = tf.convert_to_tensor(attractor)
+            else:
+                att_num = tf.einsum('Ncft,Nftk->Nck', input[0], input[1])
+                att_denom = tf.math.reduce_sum(input[0], axis=[2, 3])  # batch_size, c
+                att_denom = tf.reshape(att_denom, [-1, 2, 1])
+                attractor = att_num / att_denom
         else:
             attractor = self.kmeans_func(input[0])
             attractor = tf.convert_to_tensor(attractor)
 
         return attractor
+
 
 # Maskと混合音声を掛け合わせて分離音声を生成するレイヤ
 class Make_clean_reference(tf.keras.layers.Layer):
@@ -98,6 +104,29 @@ class DANet(tf.keras.Model):
         clean_reference = self.make_clean_reference([inputs[0], mask], training)
 
         return clean_reference
+
+    def train_with_kmeans(self, generator, steps, epochs, ideal_epochs):
+        loss_result = list()
+        for epoch in range(epochs):
+            loss_epoch = list()
+            if epoch == ideal_epochs:
+                self.to_kmeans_train()
+            for step in range(steps):
+                train_x, train_y = next(generator)
+                if ideal_epochs <= epoch:
+                    self.kmeans_fit(train_x[0])
+                loss = self.train_on_batch(x=train_x, y=train_y)
+                loss_epoch.append(loss)
+            print("Epoch {}/{}".format(epoch + 1, epochs), "loss: {:.2f}".format(np.mean(loss_epoch)), sep=" ",
+                  flush=True)
+            loss_result.append(np.mean(loss_epoch))
+        return loss_result
+
+    def to_kmeans_train(self):
+        self.make_attractor.is_kmeans = True
+
+    def to_idealmask_train(self):
+        self.make_attractor.is_kmeans = False
 
     # embeddingの結果を得る関数(kmeansクラスタリングを行うときに使用)
     def get_embedded_data(self, inputs, training):
